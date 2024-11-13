@@ -1,0 +1,98 @@
+//TODO: INSTALACIONES
+
+CREAMOS LA CARPETA Y LE DAMOS LA VENTANA DE COMANDOS :
+
+CREA LO BASICO
+- npm init --y
+
+- npm i -D express
+
+- npm i -D nodemon ts-node typescript
+
+- npm i express-validator
+
+//TODO: CARPETA SRC
+
+- crear carpeta SRC
+- dentro crear archivos index.ts y server.ts
+
+//TODO: TSCONFIG.JSON CREAR ARCHIVO EN RAIZ 
+
+- copiar y pegar la config del objeto que esta ahi
+
+//TODO: cambiamos el scrpit del packatge json y lo dejemos asi 
+
+ "scripts": {
+    "dev": "nodemon --exec ts-node src/index.ts"
+  },
+
+//TODO: instalamos colors para colorizar los logs en la terminal
+
+npm i colors
+
+//TODO:granrah1 degbi7lIsIk17mNh
+
+//TODO: MONGODB DATABASE
+
+- instalo mongoose y dotenv
+- npm i mongoose dotenv 
+- creo la bd en mongo db 
+- la instancio en compass
+- pongo el string de conexion en el .env
+- creo la carpeta config 
+
+// TODO: NESTED RESOURCE ROUTING (PATRON DE RECURSOS ANIDADOS) REFERIDO A ESTA FORMA DE ENRUTAR router.post(
+  "/:projectId/tasks"
+
+CON ESTA FORMA PODEMOS: 
+
+ - saber si el prouyecto existe
+ - si el usuario tienen permisos
+ - crear tareas en este proyecto 
+
+SE IMPLEMENTA MEDIANTE MIDDLEWARE 
+LOS MIDDLEARES SE EJECUTAN ANTES DE LOS CONTROLADORES 
+
+// TODO: INTERFACES DUPLICADAS
+LAS INTERFACES AGREGAN CAMPOS SI ESCRIBEN MAS DE UNA VEZ 
+
+POR EJEM: 
+
+interface User {
+  name: string
+}
+
+interface User {
+  email: string
+}
+
+ESTO PEDIRA EL EMAUIL POR QUE SE AÑADIO EN OTRA DECLARFACION DE INTERFACE DEL MISMO NOMBRE USER
+const user: User = {
+  name: string
+}
+
+EN LOS TYPES NO SIRVE ESTO
+
+ESTO LO USAMOS PARA EL DECLARE DEKL MIDDLEWARE PROJECT.TS
+
+TODO: PUPULATE 
+
+
+TENGO EN MI MODELO PROJECT UNA REALCION CON TAREAS 
+EL CAMPO tasks: ES UN ARRAY DE TAREAS 
+CREO UNA TAREA NUEVA Y EL BACKEND BUSCARA EL PROYECTO EN BASE AL projectId 
+ENTONCES SE ASIGNARA LA TAREA A UN PROJECTO O MUCHAS TAREAS A UN PROYECTO 
+ENTONES CON POPULATE SI QUISIERA VER EN LA RESPUESTA QUE TRAE UN PROYECTO 
+SUS TAREAS ASIGNADAS USO POPULATE('tasks') E INDICO EL CAMPO QUE TIENE EL SCHEMA DE PROYECTO 
+EN EL CUAL QUIERO VER ESTAS TAREAS EN ESTE CASO SERA tasks
+const project = await  Project.findById(id).populate("tasks");
+ESTO ME TRAERA UN ARRAY DE OBJECTOS TASKS CREADOS ASOSCUADOS AL PROYECTO
+
+LO MISMO PARA TASKS SI QUIERO VER LA INFORMACION DEL PROYECTO AL CUAL PERTENECE 
+USO POPULATE E INDICO EN QUE CAMPO IRA LA INFO DEL PROYECTO 
+EN ESTE CASO 
+  const tasks = await Task.find({
+        project: req.project.id,
+      }).populate("project")
+
+
