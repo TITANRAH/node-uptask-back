@@ -96,3 +96,51 @@ EN ESTE CASO
       }).populate("project")
 
 
+
+
+TODO: CREADOS
+
+ npm i cors
+ npm i -D @types/cors
+
+
+TODO: MORGAN
+
+
+ npm i morgan
+ npm i -D @types/morgan
+
+
+TODO: CORS POSTGRES
+
+   // TODO: CORS EN POTMAN AGREGAR ESTA LINEA
+    "dev:api": "nodemon --exec ts-node src/index.ts --api"
+
+
+TODO: BCRYPT
+
+npm i bcrypt
+
+npm i -D @types/bcrypt
+
+TODO: NODEMAILER
+https://mailtrap.io/
+npm i nodemailer 
+ npm i -D @types/nodemailer
+
+// Looking to send emails in production? Check out our Email API/SMTP product!
+
+import nodemailer from 'nodemailer'
+
+const config = () => {
+    return {
+        host: "sandbox.smtp.mailtrap.io",
+        port: 2525,
+        auth: {
+          user: "963c6d215e22c2",
+          pass: "f44d0d55816154"
+        }
+    }
+}
+
+export const transporter = nodemailer.createTransport(config());

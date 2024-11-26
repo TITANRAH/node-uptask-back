@@ -31,6 +31,9 @@ router.get(
   handleInputErrors,
   ProjectController.getProjectById
 );
+
+
+
 router.put(
   "/:id",
   param("id").isMongoId().withMessage("No es un id válido"),
@@ -44,7 +47,6 @@ router.put(
     .notEmpty()
     .withMessage("La descripción del proyecto es obligatorio"),
   //MIDDLEWARE REUTILIZABLE
-  handleInputErrors,
   handleInputErrors,
   ProjectController.udpateProyect
 );

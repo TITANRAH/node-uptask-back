@@ -8,6 +8,11 @@ export class ProjectController {
     console.log(req.body);
     const project = new Project(req.body);
 
+    // TODO: PARA PROBAR EL TOAST DE ERROR
+    // if(true){
+    //   const error = new Error("Proyecto no encontrado");
+    //   return res.status(400).json({ error: error.message });
+    // }
     try {
       await project.save();
       res.send("proyecto creado");
@@ -57,10 +62,7 @@ export class ProjectController {
       project.description = req.body.description;
 
       await project.save();
-      res.json({
-        message: "proyecto actualizado",
-        project,
-      });
+      res.send("proyecto actualizado");
     } catch (error) {
       console.log(error);
     }
