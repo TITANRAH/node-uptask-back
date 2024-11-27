@@ -59,10 +59,12 @@ export class AuthController {
 
       // buscamos el token en la base de datos
       const tokenExist = await Token.findOne({ token });
-      // console.log(tokenExist);
+      console.log(tokenExist);
 
       // si token no existe enviamos un error
-      if (!tokenExist) {
+      if (tokenExist == null) {
+        console.log("Token no existe");
+
         const error = new Error("Token no válido");
         return res.status(400).json({ error: error.message });
       }
@@ -100,8 +102,7 @@ export class AuthController {
         return res.status(404).json({ error: error.message });
       }
 
-
-      //  SI EXISTE PREGUNTAMOS SI ESTA CONFIMRADA LA CUENTA 
+      //  SI EXISTE PREGUNTAMOS SI ESTA CONFIMRADA LA CUENTA
       if (!user.confirmed) {
         //TODO: USUARIO NO CONFIRMADO
 
@@ -127,7 +128,9 @@ export class AuthController {
         });
 
         // ENVIAMOS EL AVISO DE ERROR Y EL CORREO PARA QUE CONFIRME CUENTA
-        const error = new Error("Cuenta no confirmada, hemos enviado un email de confirmación");
+        const error = new Error(
+          "Cuenta no confirmada, hemos enviado un email de confirmación"
+        );
         return res.status(401).json({ error: error.message });
       }
 
@@ -136,14 +139,58 @@ export class AuthController {
       const isPasswordCorrect = await checkPassword(password, user.password);
 
       console.log(isPasswordCorrect);
-      
-      if(!isPasswordCorrect){
+
+      if (!isPasswordCorrect) {
         const error = new Error("Contraseña incorrecta");
         return res.status(401).json({ error: error.message });
       }
 
-
       res.send("Autenticado...");
+    } catch (error) {
+      res.status(500).json({ error: "Hubo un error" });
+    }
+  };
+
+  static requestConfirmationCode = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+
+      // prevenir duplicados
+      const user = await User.findOne({ email });
+
+      // si no existe el usuario
+      if (!user) {
+        const error = new Error("El usuario no esta registrado");
+        return res.status(404).json({ error: error.message });
+      }
+
+      // confirmar si esta condfirmado
+      if(user.confirmed){
+        const error = new Error("El usuario ya esta confirmado");
+        return res.status(403).json({ error: error.message });
+      }
+
+      // genear token
+
+      const token = new Token();
+      //   generatoken n o es una funcionasyncrona
+      token.token = generateToken();
+
+      // aqui guardamos la referencia del usuario en el token
+      //   ya que token es una instancia nueva donde uno de sus campos es le id de usuario
+      //   y usuario al crearse arriba en el new user ya tiene un id para relacionarlo
+      token.user = user.id;
+
+      // enviar email
+      AuthEmail.sendConfirmationEmail({
+        email: user.email,
+        token: token.token,
+        name: user.name,
+      });
+
+      // ejecutamos las dos promesas al mismo tiempo
+      await Promise.allSettled([user.save(), token.save()]);
+      res.send("Se envió un nuevo token a tu email");
     } catch (error) {
       res.status(500).json({ error: "Hubo un error" });
     }
