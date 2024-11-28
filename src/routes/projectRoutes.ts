@@ -5,12 +5,22 @@ import { handleInputErrors } from "../middleware/validation";
 import { TaskController } from "../controllers/TaskControllers";
 import { projectExist } from "../middleware/project";
 import { taskBelongsToProject, taskExist } from "../middleware/task";
+import { authenticate } from "../middleware/auth";
+import { TeamMemberController } from "../controllers/TeamController";
 
 const router = Router();
+
+//TODO EVIATAR ESCRIBIR EL MIDDELWARE EN TODOS LOS ENDPOINT
+
+// ASI LOS PROTEJO TODOS DE UNA
+router.use(authenticate);
 
 router.post(
   //TODO: VALIDACIONES FUNCIONAN COMO ZOD
   "/",
+
+  //TODO: MIDDLEWARE DE AUTORIZACION CON JWT
+
   body("projectName")
     .notEmpty()
     .withMessage("El nombre del proyecto es obligatorio"),
@@ -31,8 +41,6 @@ router.get(
   handleInputErrors,
   ProjectController.getProjectById
 );
-
-
 
 router.put(
   "/:id",
@@ -111,6 +119,31 @@ router.post(
   body("status").notEmpty().withMessage("El status es obligatorio"),
   handleInputErrors,
   TaskController.updateTaskStatus
+);
+
+// TEAMS
+router.post(
+  "/:projectId/team/find",
+  body("email").isEmail().toLowerCase().withMessage("Email no válido"),
+  handleInputErrors,
+  TeamMemberController.findMemberByEmail
+);
+router.post(
+  "/:projectId/team",
+  body("id").isMongoId().withMessage("No es un id válido"),
+  handleInputErrors,
+  TeamMemberController.addMemberById
+);
+router.delete(
+  "/:projectId/team",
+  body("id").isMongoId().withMessage("No es un id válido"),
+  handleInputErrors,
+  TeamMemberController.removeMemberById
+);
+router.get(
+  "/:projectId/team",
+  handleInputErrors,
+  TeamMemberController.getProyectTeam
 );
 
 export default router;

@@ -5,6 +5,7 @@ import Token from "../models/Token";
 import { generateToken } from "../utils/token";
 import { transporter } from "../config/nodemailer";
 import { AuthEmail } from "../emails/AuthEmail";
+import { generateJWT } from "../utils/jwt";
 
 export class AuthController {
   static createAccount = async (req: Request, res: Response) => {
@@ -102,7 +103,7 @@ export class AuthController {
         return res.status(404).json({ error: error.message });
       }
 
-      //  SI EXISTE PREGUNTAMOS SI ESTA CONFIMRADA LA CUENTA
+      //  SI EXISTE EL USUARIO PREGUNTAMOS SI ESTA CONFIMRADA LA CUENTA
       if (!user.confirmed) {
         //TODO: USUARIO NO CONFIRMADO
 
@@ -145,7 +146,11 @@ export class AuthController {
         return res.status(401).json({ error: error.message });
       }
 
-      res.send("Autenticado...");
+      // generar JWT
+
+      const token = generateJWT({id: user.id});
+
+      res.send(token);
     } catch (error) {
       res.status(500).json({ error: "Hubo un error" });
     }
@@ -165,7 +170,7 @@ export class AuthController {
       }
 
       // confirmar si esta condfirmado
-      if(user.confirmed){
+      if (user.confirmed) {
         const error = new Error("El usuario ya esta confirmado");
         return res.status(403).json({ error: error.message });
       }
@@ -194,5 +199,102 @@ export class AuthController {
     } catch (error) {
       res.status(500).json({ error: "Hubo un error" });
     }
+  };
+
+  static forgotPassword = async (req: Request, res: Response) => {
+    try {
+      //tomamos el email
+      const { email } = req.body;
+
+      // prevenir duplicados
+      const user = await User.findOne({ email });
+
+      // si no existe el usuario
+      if (!user) {
+        const error = new Error("El correo no está registrado");
+        return res.status(404).json({ error: error.message });
+      }
+
+      // genear token
+
+      const token = new Token();
+      //   generatoken n o es una funcionasyncrona
+      token.token = generateToken();
+
+      // aqui guardamos la referencia del usuario en el token
+      //   ya que token es una instancia nueva donde uno de sus campos es le id de usuario
+      //   y usuario al crearse arriba en el new user ya tiene un id para relacionarlo
+      token.user = user.id;
+
+      await token.save();
+
+      // enviar email
+      AuthEmail.sendPasswordResetToken({
+        email: user.email,
+        token: token.token,
+        name: user.name,
+      });
+
+      // ejecutamos las dos promesas al mismo tiempo
+
+      res.send("Revisa tu email para instrucciones");
+    } catch (error) {
+      res.status(500).json({ error: "Hubo un error" });
+    }
+  };
+
+  static validateToken = async (req: Request, res: Response) => {
+    try {
+      // obtenemos el token
+      const { token } = req.body;
+      console.log(token);
+
+      // buscamos el token en la base de datos
+      const tokenExist = await Token.findOne({ token });
+      if (!tokenExist) {
+        const error = new Error("Token no válido");
+        return res.status(400).json({ error: error.message });
+      }
+
+      res.send("Token válido, define tu nuevo password");
+    } catch (error) {
+      res.status(500).json({ error: "Hubo un error" });
+    }
+  };
+
+  static updatePasswordWithToken = async (req: Request, res: Response) => {
+    try {
+      // obtenemos el token
+
+      const { token } = req.params;
+
+      // buscamos el token en la base de datos
+      const tokenExist = await Token.findOne({ token });
+      if (!tokenExist) {
+        const error = new Error("Token no válido");
+        return res.status(400).json({ error: error.message });
+      }
+
+      // el token tiene el id del usuario
+      // por lo que buscara si existe
+      // todo esto por que neceistamos guardar la nuea contraseña
+      // hasheada del usuario en el user
+      const user = await User.findById(tokenExist.user);
+
+      // si existe vamos a hashear un poner el nuevo password
+      user.password = await hashPassword(req.body.password);
+
+      // guardamos el usuario
+      // y borramos el token que usamnos para toda esta operacion
+      await Promise.allSettled([user.save(), tokenExist.deleteOne()]);
+      res.send("Password modificado correctamente");
+    } catch (error) {
+      res.status(500).json({ error: "Hubo un error" });
+    }
+  };
+
+
+  static user = async (req: Request, res: Response) => {
+    return res.json(req.user);
   };
 }

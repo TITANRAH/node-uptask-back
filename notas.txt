@@ -144,3 +144,31 @@ const config = () => {
 }
 
 export const transporter = nodemailer.createTransport(config());
+
+TODO: ALGORITMO PARA REESTABLECER PASSWORD 
+
+  - comprobar si el usuario existe
+  - si el usuario existe se le envia un token que expira en 15 min 
+  - el token es enviado via email y el uuario debera visitar un elace para ingresar ese token 
+  si el token es valido permitimos reestablecer el password
+  
+TODO: JSONWEBTOKEN
+
+npm i jsonwebtoken
+ npm i -D @types/jsonwebtoken
+
+ se divide en header, payload y firma 
+ podemos verificar un jwt en jwt.io
+
+ al hacer loguin llamamos a la funcion que crea el jwt y guardamos e id de usuario 
+ en el front recibimos como respuesta el jwt y lo guardamos en ete caso en lcoalstorage
+
+TODO: DIFRENCIA ENTRE AUTENTICACION Y AUTORIZACION
+
+SON PROCESOS DE SEGURIDAD
+
+AUTENTICACION: VERIFICAION DE IDENTIDAD DEL USUARIO , SEGURIDAD DE VERIFICAR QUE EL USUARIO 
+ES QUIEN DICE SER
+
+AUTORIZACION: CUANDO LA IDENTIDAD DEL USUARIO SE VERIFICA, VIENE EL PROCESO DE DETERMINAR 
+SI SE DEBE PERMITIR ACCEDER A RECURSOS O CIERTAS ACCIONES

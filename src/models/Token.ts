@@ -24,7 +24,7 @@ const tokenSchema: Schema = new Schema({
     default: Date.now(),
 
     //EXPIRACION DEL TOKEN
-    expires: '10m',
+    expiresAt: '10m',
   },
 });
 
