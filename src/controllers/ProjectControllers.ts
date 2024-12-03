@@ -31,8 +31,16 @@ export class ProjectController {
   static getAllProjects = async (req: Request, res: Response) => {
     try {
       const projects = await Project.find({
-        $or: [{ manager: { $in: req.user.id } }],
+        $or: [
+          // TODO: PUEDO VER LOS PROYECTOS AL LOGUEARME SOLO SI SOY 
+          // MANAGER O PERTENEZCO A UN TEAM
+          { manager: { $in: req.user.id } },
+          { team: { $in: req.user.id } },
+        ],
       });
+
+      console.log("projects", projects);
+      
       res.json(projects);
     } catch (error) {
       console.log(error);
@@ -61,7 +69,8 @@ export class ProjectController {
       // PODEMOS COMPARAR SI EL MANAGER DEL PROUECTO ES EL MISMO AL USUARUIO AUTENTICADO 
       // POR ESO SI ME AUTENTICO CON EL DUEÑO DEL PROYECTO PUEDO VER EL PROYECTO QUE VA EN EL PARAM 
       // SI NO SOY EL DUEÑO DEL PROYECTO NO PUEDO VERLO AUNQUE ME AUTENTIQUE CON OTRO USUARIO
-      if (project.manager.toString() !== req.user.id.toString()) {
+      // Y SI NO PERTENEZCO A UN TEAM DARA ESTE ERROR SI NO NO, Y DEJHARA VER EL PROYECTO 
+      if (project.manager.toString() !== req.user.id.toString() && !project.team.includes(req.user.id)) {
         const error = new Error("Acción no autorizada");
         return res.status(404).json({ error: error.message });
       }

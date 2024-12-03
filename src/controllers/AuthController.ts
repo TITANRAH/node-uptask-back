@@ -148,7 +148,7 @@ export class AuthController {
 
       // generar JWT
 
-      const token = generateJWT({id: user.id});
+      const token = generateJWT({ id: user.id });
 
       res.send(token);
     } catch (error) {
@@ -293,8 +293,91 @@ export class AuthController {
     }
   };
 
-
   static user = async (req: Request, res: Response) => {
     return res.json(req.user);
   };
+
+  static updateProfile = async (req: Request, res: Response) => {
+    const { name, email } = req.body;
+
+    const userExist = await User.findOne({ email });
+
+    // TODO: VALIDACION DE EMAIL DUPLICADO POR QUE SI NO TE PUEES PONER EL EMAIL DE OTRO SER
+    // COMO BUSCO AL USUARIO SI EXISTE PARA PODER DECIR QUE EL CORREO QUE QUIERE CAMBIAR ESTA EN USO
+    // ME TRAE UN ID DE USUARIO
+    // POR LO QUE PUEDO COMPRAR LOS IDS ,DEL USUARUO AUTENTICADO Y EL USUARIO ENCONTRADO EN LA BD
+    // ESTO ME PERMITIRA CAMBIAR MI NOMBRE SOLAMEBTE Y ME DEJARA
+    // YA QUE SI NO SOY YO EL QUE ESTA AUTENTICADO Y QUIERO CAMBIAR EL EMAIL
+    // NO DEBERIA DEJARME
+    // EN CAMBIO SI ESTOY AUTENTICADO Y AL BUSCAR EL CORREO TOMANDO EL CORREO QUE INGRESE PARA LA ACTUALIZACION
+    // AHI DEBERUIA DEJARME CAMBIAR SOLO EL NOMBRE
+    // DE LO CONTRARIO LANZARA ERROR
+    if (userExist && userExist.id.toString() !== req.user.id.toString()) {
+      const error = new Error("Ese email ya está en uso");
+      return res.status(409).json({ error: error.message });
+    }
+
+    req.user.name = name;
+    req.user.email = email;
+
+    try {
+      await req.user.save();
+      res.send("Perfil actualizado correctamente");
+    } catch (error) {
+      res.status(500).json({ error: "Hubo un error" });
+    }
+  };
+
+  static updateCurrentUserPassword = async (req: Request, res: Response) => {
+    console.log("updateCurrentUserPassword");
+
+    // TODO: ACTUALIZAR CONTRASEÑA DE USUARIO
+    const { current_password, password } = req.body;
+
+    // tomamos al usuario que viene en el middleware
+    const user = await User.findById(req.user.id);
+
+    // isPasswordCorrect es una promesa
+    const isPasswordCorrect = await checkPassword(
+      current_password,
+      user.password
+    );
+
+    // si la contraseña no es correcta
+    if (!isPasswordCorrect) {
+      const error = new Error("Contraseña actual incorrecta");
+      return res.status(401).json({ error: error.message });
+    }
+
+    try {
+      // si la contraseña es correcta
+      // el user del middlware osea el que esta haciendo la peticion
+      // tendra una nueva contraseña hasheada
+      user.password = await hashPassword(password);
+
+      //guardamos el usuario
+      await user.save();
+
+      res.send("El password se modificó correctamente");
+    } catch (error) {
+      res.status(500).json({ error: "Hubo un error" });
+    }
+  };
+
+  static checkPassword = async (req: Request, res: Response) => {
+
+    const { password } = req.body;
+
+    const user = await User.findById(req.user.id);
+
+    const isPasswordCorrect = await checkPassword(password, user.password);
+
+    if(!isPasswordCorrect){
+      const error = new Error("Contraseña incorrecta");
+      return res.status(401).json({ error: error.message });
+    }
+
+    res.send('Password correcto')
+  }
+
 }

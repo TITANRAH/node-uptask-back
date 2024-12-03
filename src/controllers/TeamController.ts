@@ -53,16 +53,18 @@ export class TeamMemberController {
   };
 
   static removeMemberById = async (req: Request, res: Response) => {
-    const { id } = req.body;
-    console.log(id);
-    if (!req.project.team.some((teamMember) => teamMember.toString() === id)) {
+    const { userId } = req.params;
+    console.log(userId);
+    if (
+      !req.project.team.some((teamMember) => teamMember.toString() === userId)
+    ) {
       const error = new Error("El proyecto no tiene a este usuario");
       return res.status(409).json({ message: error.message });
     }
 
     try {
       req.project.team = req.project.team.filter(
-        (teamMember) => teamMember.toString() !== id.toString()
+        (teamMember) => teamMember.toString() !== userId.toString()
       );
 
       req.project.save();

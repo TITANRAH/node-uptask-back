@@ -82,7 +82,7 @@ router.post(
 // COMPARACION DE PASSWORDS NUEVOS
 router.post(
   "/update-password/:token",
-  param('token').isNumeric().withMessage('El token no es válido'),
+  param("token").isNumeric().withMessage("El token no es válido"),
   body("password")
     .isLength({ min: 8 })
     .withMessage("El pass es muy corto, min 8 caracteres"),
@@ -110,10 +110,41 @@ router.post(
 );
 
 // TODO: ENDPOINT PARA VERIFICAR SI EL USUARIOE STA AUTENTICADO
-router.get('/user',
-authenticate,
-AuthController.user
+router.get("/user", authenticate, AuthController.user);
+router.put(
+  "/profile",
+  authenticate,
+  body("name").notEmpty().withMessage("El nombre es obligatorio"),
+  body("email").isEmail().withMessage("Email no válido"),
+  handleInputErrors,
+  AuthController.updateProfile
+);
 
-)
+router.post(
+  "/update-password",
+  authenticate,
+  body("current_password")
+    .notEmpty()
+    .withMessage("La contraseña actual es obligatoria"),
+  body("password")
+    .isLength({ min: 8 })
+    .withMessage("El pass es muy corto, min 8 caracteres"),
+  body("password_confirmation").custom((value, { req }) => {
+    if (value !== req.body.password) {
+      throw new Error("Las contraseñas no coinciden");
+    }
+    return true;
+  }),
+  handleInputErrors,
+  AuthController.updateCurrentUserPassword
+);
+router.post(
+  "/check-password",
+  authenticate,
+  body("password").notEmpty().withMessage("El pass no puede ir vacío"),
+
+  handleInputErrors,
+  AuthController.checkPassword
+);
 
 export default router;

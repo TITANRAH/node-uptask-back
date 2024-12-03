@@ -66,14 +66,29 @@ export class TaskController {
       // console.log(req.project.id);
 
       // el project es la el campo que trae el task como proyecto, el id
-      
+
       // se compara con el prouecto encontrado con el projectid en el middleware que es pasado a al req global
-      //  // TODO: ESTO SE PASO A MIDDLEWARE 
+      //  // TODO: ESTO SE PASO A MIDDLEWARE
       // if (req.task.project.toString() != req.project.id) {
       //   const error = new Error("Acción no válida");
       //   return res.status(400).json({ error: error.message });
       // }
-      res.json(req.task);
+
+      // TODO: POPULATE PARA TRAER DATOS RELACIONADOS
+
+      // EN ESTE CASO PARA TRAER EL ID DEL QUE COMPLETO UNA TAREA
+      const task = await Task.findById(req.task.id)
+        // AHORA EL POPPULATE SE APLICA EN EL USER AL PONER .USER
+        .populate({ path: "completedBy.user", select: "id name email" })
+
+        //TODO: SEGUNDO POPULATE PARA TRAER LAS NOTAS DE UNA TAREA
+        // DONDE HAYA IDS RELACIONADOS PUEDO TRAERLOS CON POPULATE
+        // Y DENTRO DEL POPULATE PUEDO PEDIR OTRO POPULATE PARA TRAER AL USUARIO
+        .populate({path: 'notes', populate: {path: 'createdBy', select: 'id name email'}});
+
+      console.log("task ->", task);
+
+      res.json(task);
     } catch (error) {
       res.status(500).json({ error: "Hubo un error" });
     }
@@ -92,7 +107,7 @@ export class TaskController {
 
       // el project es la el campo que trae el task como proyecto, el id
       // se compara con el prouecto encontrado con el projectid en el middleware que es pasado a al req global
-      // TODO: ESTO SE PASO A MIDDLEWARE 
+      // TODO: ESTO SE PASO A MIDDLEWARE
       // if (req.task.project.toString() != req.project.id) {
       //   const error = new Error("Acción no válida");
       //   return res.status(400).json({ error: error.message });
@@ -148,6 +163,15 @@ export class TaskController {
 
       req.task.status = status;
 
+      const data = {
+        user: req.user.id,
+        status: req.task.status,
+      };
+
+      // TODO: CAMPO NUEVO EN EL MODELO TASK
+      // SABER QUIEN COMPLETO LA TAREA
+      // como el campo es un arreglo vamos pusheando los datos
+      req.task.completedBy.push(data);
       await req.task.save();
 
       res.send("status de tarea actualizado");
