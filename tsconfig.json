@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "./dist/index.js",
+        "outDir": "./dist",
         "rootDir": "./src",
         "lib": ["esnext"],
         "target": "ESNext",
