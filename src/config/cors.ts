@@ -7,7 +7,7 @@ export const corsConfig: CorsOptions = {
 
         console.log(process.argv);
         
-        const whitelist = [process.env.FRONTEND_URL!];
+        const whitelist = [process.env.FRONTEND_URL!, 'https://node-uptask-back.onrender.com'];
 
         // TODO: CORS EN POSTMAN 2 
 
