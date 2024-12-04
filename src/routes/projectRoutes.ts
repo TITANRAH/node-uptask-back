@@ -82,7 +82,7 @@ router.delete(
 );
 
 //TODO: ROUTE FOR TASKS
-// la create task pide el id del proyecto  slash tasks
+// la create task pide el id del proyect  slash tasks
 
 
 
