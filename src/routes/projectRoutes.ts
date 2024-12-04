@@ -48,9 +48,17 @@ router.get(
   ProjectController.getProjectById
 );
 
+// esto valida que el prouecto exista antes de hacer cualquier cosa
+router.param("projectId", projectExist);
+
+// TODO: MIDDLEWARE PAR SABER SI UN PROYECTO EXISTE 
+
+// CAMBIAMOS DE ID A PROJECT ID Y SUBIMOS EL MIDDLEWARE DE POSICION
+// AHORA QUE SE LLAME PROJECTID ENTRARA A FUNCIONAR CON EL MIDDLEWARE
+
 router.put(
-  "/:id",
-  param("id").isMongoId().withMessage("No es un id válido"),
+  "/:projectId",
+  param("projectId").isMongoId().withMessage("No es un id válido"),
   body("projectName")
     .notEmpty()
     .withMessage("El nombre del proyecto es obligatorio"),
@@ -62,20 +70,21 @@ router.put(
     .withMessage("La descripción del proyecto es obligatorio"),
   //MIDDLEWARE REUTILIZABLE
   handleInputErrors,
+  hasAuthorization,
   ProjectController.udpateProyect
 );
 router.delete(
-  "/:id",
-  param("id").isMongoId().withMessage("No es un id válido"),
+  "/:projectId",
+  param("projectId").isMongoId().withMessage("No es un id válido"),
   handleInputErrors,
+  hasAuthorization,
   ProjectController.deleteProyect
 );
 
 //TODO: ROUTE FOR TASKS
 // la create task pide el id del proyecto  slash tasks
 
-// esto valida que el prouecto exista antes de hacer cualquier cosa
-router.param("projectId", projectExist);
+
 
 router.post(
   "/:projectId/tasks",

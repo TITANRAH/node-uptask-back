@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, PopulatedDoc, Types } from "mongoose";
-import { ITask } from "./Task";
+import Task, { ITask } from "./Task";
 import { IUser } from "./User";
+import Note from "./Note";
 
 // TODO: INTERFACE TYPE MONGO
 export interface IProject extends Document {
@@ -53,6 +54,30 @@ const ProyectSchema = new Schema(
   },
   {
     timestamps: true,
+  }
+);
+
+
+ProyectSchema.pre(
+  "deleteOne",
+ 
+  { document: true },
+  async function () {
+   
+    // 1. Eliminamos un proyecto y lo recuperamos de this._id 
+    const projectId = this._id;
+    if (!projectId) return;
+    
+    // 2. Buscamos todas las tareas que pertenecen a ese proyecto
+    const tasks = await Task.find({project:projectId})
+
+    // iterams sobre cada tarea
+    for(const task of tasks){
+      // 3. eliminamos cada tarea iterada
+      await Note.deleteMany({ task: task._id });
+    }
+
+    await Task.deleteMany({ project: projectId });
   }
 );
 

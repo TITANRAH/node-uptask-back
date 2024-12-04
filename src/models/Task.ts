@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import Note from "./Note";
 
 // TODO: DICCIONARIO DE ESTADOS DE TAREAS
 
@@ -88,6 +89,27 @@ export const TaskSchema = new Schema(
   },
   {
     timestamps: true,
+  }
+);
+
+// TODO: MIDDLEWARE DE MONGOOSE
+
+// SE PUEDEN EJECTUAR PREVIO A UN GUARDADO O ELIMINADO DE UN DOCUMENTO
+// EN ESTE CASO NECESITAMOS ELIMINAR UNA NOTA SI UNA TAREA SE ELIMINA
+// LAS ELIMINACIONES LAS ETAMOS HACEIUNDO CON DELETEONE POR LO QUE USAMOS DELETEONE DENTRO DEL PRE
+
+TaskSchema.pre(
+  "deleteOne",
+  // no usaremos query pero se puede ocupar
+  // { document: true, query: false },
+  { document: true },
+  async function () {
+    // esto te muetra en este caso el id de lat area eliminada
+    console.log("id tarea elinunada", this._id);
+    const taskId = this._id;
+    if (!taskId) return;
+
+    await Note.deleteMany({ task: taskId });
   }
 );
 

@@ -63,6 +63,11 @@ export function hasAuthorization(
   res: Response,
   next: NextFunction
 ) {
+
+  // console.log('manager -> ',req.project.manager.toString())
+  // console.log('user ->',req.user.id.toString)
+
+  console.log(req.user.id.toString() === req.project.manager.toString())
   if (req.user.id.toString() !== req.project.manager.toString()) {
     const error = new Error("Acción no válida");
     return res.status(400).json({ error: error.message });

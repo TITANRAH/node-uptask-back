@@ -32,7 +32,7 @@ export class ProjectController {
     try {
       const projects = await Project.find({
         $or: [
-          // TODO: PUEDO VER LOS PROYECTOS AL LOGUEARME SOLO SI SOY 
+          // TODO: PUEDO VER LOS PROYECTOS AL LOGUEARME SOLO SI SOY
           // MANAGER O PERTENEZCO A UN TEAM
           { manager: { $in: req.user.id } },
           { team: { $in: req.user.id } },
@@ -40,7 +40,7 @@ export class ProjectController {
       });
 
       console.log("projects", projects);
-      
+
       res.json(projects);
     } catch (error) {
       console.log(error);
@@ -58,19 +58,22 @@ export class ProjectController {
 
         const error = new Error("proyecto no encontrado");
         return res.status(404).json({ error: error.message });
-        }
+      }
 
-        //TODO: AUTENTICACION AUTROIZACION EN GETPROJECTBYID
-      // AQUI YA TENEMOS UN PROYECTO ENCOTRADO POR ID DE PROUYECTO 
-      // AHORA ESTE PROYECTO TRAE UN MANAGER QUE ES QUIEN CREO ESTE PROUECTO 
+      //TODO: AUTENTICACION AUTROIZACION EN GETPROJECTBYID
+      // AQUI YA TENEMOS UN PROYECTO ENCOTRADO POR ID DE PROUYECTO
+      // AHORA ESTE PROYECTO TRAE UN MANAGER QUE ES QUIEN CREO ESTE PROUECTO
       // Y ESTE MANAGER ES UN ID DE USUARIO
 
-      // COMO TENEMOS AL USUARIO EN EL REQUEST GRACIAS AL MIDDELWARE 
-      // PODEMOS COMPARAR SI EL MANAGER DEL PROUECTO ES EL MISMO AL USUARUIO AUTENTICADO 
-      // POR ESO SI ME AUTENTICO CON EL DUEÑO DEL PROYECTO PUEDO VER EL PROYECTO QUE VA EN EL PARAM 
+      // COMO TENEMOS AL USUARIO EN EL REQUEST GRACIAS AL MIDDELWARE
+      // PODEMOS COMPARAR SI EL MANAGER DEL PROUECTO ES EL MISMO AL USUARUIO AUTENTICADO
+      // POR ESO SI ME AUTENTICO CON EL DUEÑO DEL PROYECTO PUEDO VER EL PROYECTO QUE VA EN EL PARAM
       // SI NO SOY EL DUEÑO DEL PROYECTO NO PUEDO VERLO AUNQUE ME AUTENTIQUE CON OTRO USUARIO
-      // Y SI NO PERTENEZCO A UN TEAM DARA ESTE ERROR SI NO NO, Y DEJHARA VER EL PROYECTO 
-      if (project.manager.toString() !== req.user.id.toString() && !project.team.includes(req.user.id)) {
+      // Y SI NO PERTENEZCO A UN TEAM DARA ESTE ERROR SI NO NO, Y DEJHARA VER EL PROYECTO
+      if (
+        project.manager.toString() !== req.user.id.toString() &&
+        !project.team.includes(req.user.id)
+      ) {
         const error = new Error("Acción no autorizada");
         return res.status(404).json({ error: error.message });
       }
@@ -81,25 +84,12 @@ export class ProjectController {
     }
   };
   static udpateProyect = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    console.log(id);
-
     try {
-      const project = await Project.findById(id);
-      if (!project) {
-        const error = new Error("proyecto no encontrado");
-        return res.status(404).json({ error: error.message });
-      }
+      req.project.clientName = req.body.clientName;
+      req.project.projectName = req.body.projectName;
+      req.project.description = req.body.description;
 
-      if (project.manager.toString() !== req.user.id.toString()) {
-        const error = new Error("Solo el manager puede actualizar este proyecto");
-        return res.status(404).json({ error: error.message });
-      }
-      project.clientName = req.body.clientName;
-      project.projectName = req.body.projectName;
-      project.description = req.body.description;
-
-      await project.save();
+      await req.project.save();
       res.send("proyecto actualizado");
     } catch (error) {
       console.log(error);
@@ -110,23 +100,7 @@ export class ProjectController {
     console.log(id);
 
     try {
-      // PUEDE SER ASI
-      // const project = await Project.findByIdAndDelete(id, req.body);
-
-      // O ASI
-
-      const project = await Project.findById(id);
-      if (!project) {
-        const error = new Error("proyecto no encontrado");
-        return res.status(404).json({ error: error.message });
-      }
-
-      if (project.manager.toString() !== req.user.id.toString()) {
-        const error = new Error("Solo el manager puede eliminar este proyecto");
-        return res.status(404).json({ error: error.message });
-      }
-
-      await project.deleteOne();
+      await req.project.deleteOne();
 
       res.send("proyecto eliminado");
     } catch (error) {
