@@ -179,3 +179,7 @@ TUVE QUE IR AL PACJKAGE YAGREGAR ESTA LINEA
 
 
  "build": "tsc"
+
+
+
+   // "prestart": "npm install && npm run build"
